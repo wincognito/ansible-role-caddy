@@ -1,0 +1,73 @@
+---
+# made according to this:
+# https://caddyserver.com/docs/install#debian-ubuntu-raspbian
+
+- name: Preinstall packages
+  apt:
+    name:
+    - apt-transport-https
+    - curl
+    - debian-archive-keyring
+    - debian-keyring
+    update_cache: true
+  tags:
+  - packages
+
+- name: Check if keyring exists
+  stat: 
+    path: /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  register: keyringfile
+
+- name: Create temp directory
+  file:
+    path: /tmp/caddy
+    state: directory
+  tags:
+  - keyring
+  when: not keyringfile.stat.exists
+
+- name: Download gpg.key
+  ansible.builtin.get_url:
+    url: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"
+    dest: /tmp/caddy/gpg.key
+  tags:
+  - keyring
+  when: not keyringfile.stat.exists
+
+- name: Dearmor gpg.key
+  command: gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg /tmp/caddy/gpg.key
+  tags:
+  - keyring
+  when: not keyringfile.stat.exists
+
+- name: Check if package list exists
+  stat:
+    path: /etc/apt/sources.list.d/caddy-stable.list
+  register: packagelistfile
+
+- name: Download package list
+  ansible.builtin.get_url:
+    url: "https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt"
+    dest: /etc/apt/sources.list.d/caddy-stable.list
+  tags:
+  - packagelist
+  when: not packagelistfile.stat.exists
+
+- name: Install caddy
+  apt:
+    name:
+    - caddy
+    update_cache: true
+  tags:
+  - caddy
+
+- name: Request no password for 'sudo systemctl reload caddy'
+  copy:
+    content: |
+      # No password requested for sudoers
+      {{ caddy_role_user }} ALL=(root) NOPASSWD:/usr/bin/systemctl reload caddy
+    dest: /etc/sudoers.d/90-no-password-for-reload-caddy      
+    mode: "0640"
+  become: true
+  tags:
+  - sudo

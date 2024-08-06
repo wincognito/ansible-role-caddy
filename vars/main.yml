@@ -1,0 +1,4 @@
+---
+
+caddy_role_user: caddy
+caddy_role_group: "{{ caddy_role_user }}"

@@ -1,0 +1,9 @@
+- name: Copy default Caddyfile
+  template:
+    src: templates/Caddyfile
+    dest: "/etc/caddy/Caddyfile"
+    mode: "0640"
+    owner: "{{ caddy_role_user }}"
+    group: "{{ caddy_role_group }}"
+  notify:
+  - Reload Caddy

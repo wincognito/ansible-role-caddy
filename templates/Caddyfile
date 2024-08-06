@@ -1,0 +1,86 @@
+# The Caddyfile is an easy way to configure your Caddy web server.
+#
+# Unless the file starts with a global options block, the first
+# uncommented line is always the address of your site.
+#
+# To use your own domain name (with automatic HTTPS), first make
+# sure your domain's A/AAAA DNS records are properly pointed to
+# this machine's public IP, then replace ":80" below with your
+# domain name.
+
+
+# {
+#     email letsencrypt@example.com
+#     # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory   
+# }
+
+(default_header) {
+    header {
+        -server
+        Strict-Transport-Security max-age=31536000
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+        # X-Frame-Options DENY
+    }    
+}
+
+# (auth_user1) {
+#     basicauth /* {
+#         user1 $2a$14$0E06/VTR2isByBDmTp/UQO7wWcfzn/u4pJ9r3fS9uDvqN4ykyIo6q
+#     }
+# }
+
+# (trusted_proxy_list) {
+#     ## Uncomment & adjust the following line to configure specific ranges which should be considered as trustworthy.
+#     # Only relevant if behind a reverse proxy (e.g. CloudFlare)
+#     # trusted_proxies 10.11.0.0/24
+# }
+
+# (client_auth) {
+#     # https://caddyserver.com/docs/json/apps/http/servers/tls_connection_policies/client_authentication/
+#     client_auth {
+#         mode require_and_verify
+#         trusted_ca_cert_file /ssl/ca.pem
+#     }
+# }
+
+# example.com {
+#     import default_header
+#     import auth_user1
+#     reverse_proxy 127.0.0.1:8080
+# }
+
+# example2.com:2345 {
+#     import default_header
+#     tls {
+#         import client_auth
+#     }
+#     respond "Hello, my world!"
+# }
+
+
+:80 {
+        import default_header
+        
+        # templates is important for formatting variables
+        templates
+        respond "Hello IP {{ '{{' }} .RemoteIP {{ '}}' }}. It's {{ '{{' }} now {{ '}}' }}."
+
+        # Set this path to your site's directory.
+        # root * /usr/share/caddy
+        # Enable the static file server.
+        # file_server
+
+        # Another common task is to set up a reverse proxy:
+        # reverse_proxy localhost:8080
+
+        # Or serve a PHP site through php-fpm:
+        # php_fastcgi localhost:9000
+}
+
+# Refer to the Caddy docs for more information:
+# https://caddyserver.com/docs/caddyfile
+
+
+
+
